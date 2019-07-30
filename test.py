@@ -10,11 +10,13 @@ import logging
 import multiprocessing
 import time
 
+from my_classes import YTDLSource
+
 #discord.Message().
 
 players = {}
 
-DISCORD_BOT_TOKEN = 'NjA1NDgxOTQ5Nzc5NDYwMDk4.XT9Vzg.JZgvKNjxF9UcZziEih4_2aO3iDo'
+DISCORD_BOT_TOKEN = 'NjA1NDgxOTQ5Nzc5NDYwMDk4.XUB4dA.PrFZ4VYHtprNHMcPic_VZ1EPV0o'
 BOT_NAME = 'TestBot#9545'
 CREATOR_NAME = 'Sasha Drozdov#8680'
 
@@ -22,13 +24,7 @@ CREATOR_NAME = 'Sasha Drozdov#8680'
 client = commands.Bot(command_prefix='?')
 vclient = 0
 source = 0
-
-def play_music():
-    global vclient, source
-    while (True):
-        vclient.play(source)
-        source.read()
-    #voice_client.play(source)
+#ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 @client.event
 
@@ -60,14 +56,14 @@ async def on_voice_state_update(member, before:discord.VoiceState, after:discord
             if vclient.is_connected:
                 await vclient.disconnect()
             vclient =  await after.channel.connect()
-        #source = discord.FFmpegPCMAudio("https://www.youtube.com/watch?v=hjGZLnja1o8")
-        source = discord.FFmpegPCMAudio("/home/sasha/TestBot/music/output.avi")
-        vclient.play(source)
-        await asyncio.sleep(5)
-        vclient.stop()
-        #await vclient.disconnect()
+        source = await YTDLSource.from_url("https://www.youtube.com/watch?v=vSM9YLonOog", loop=client.loop)
+        if (vclient.is_connected):
+            vclient.play(source)
+            await asyncio.sleep(9)
+            vclient.stop()
+        await vclient.disconnect()
     return
 
-if discord.opus.is_loaded():
-    print("OK")
+if not discord.opus.is_loaded():
+    print("OPUS NOT LOADED")
 client.run(DISCORD_BOT_TOKEN)
