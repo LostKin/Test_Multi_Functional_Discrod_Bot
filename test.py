@@ -16,7 +16,7 @@ from my_classes import YTDLSource
 
 players = {}
 
-DISCORD_BOT_TOKEN = 'NjA1NDgxOTQ5Nzc5NDYwMDk4.XUDSvA.r_XQ4Q3y-GHPPz01Ygc4p_prRVw'
+DISCORD_BOT_TOKEN = 'NjA1NDgxOTQ5Nzc5NDYwMDk4.XUFYeQ.LKGc8kUXDnExPKj12MHBlh3zMqE'
 BOT_NAME = 'TestBot#9545'
 CREATOR_NAME = 'Sasha Drozdov#8680'
 
@@ -27,11 +27,11 @@ cursor = db.cursor()
     CREATE TABLE users(name TEXT PRIMARY KEY, url TEXT)
 ''')
 db.commit()"""
-#cursor.execute('''DROP TABLE users''')
 #db.commit()
 client = commands.Bot(command_prefix='.')
 vclient = 0
 source = 0
+cnt = 0
 
 #ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
@@ -58,7 +58,7 @@ def get_time(name):
 
 @client.event
 async def on_voice_state_update(member, before:discord.VoiceState, after:discord.VoiceState):
-    global vclient, source
+    global vclient, source, cnt
     if (str(member) == BOT_NAME):
         return
     if (after.channel == None):
@@ -67,16 +67,16 @@ async def on_voice_state_update(member, before:discord.VoiceState, after:discord
         if (vclient == 0):
             vclient =  await after.channel.connect()
         else:
-            #print("trying to connect")
             if vclient.is_connected():
-                if vclient.is_playing():
-                    vclient.stop()
+                #if vclient.is_playing():
+                    #vclient.stop()
                 #print(type(vlcient.is_connected()))
-                await vclient.disconnect()
-                print(vclient.is_connected())
+                #await vclient.disconnect()
+                #print(vclient.is_connected())
                 #vclient.connect()
-                #await vclient.move_to(after.channel)     
-            vclient =  await after.channel.connect()
+                await vclient.move_to(after.channel)
+            else:
+                vclient =  await after.channel.connect()
         c_url = get_url(str(member))
         if (c_url == ''):
             await vclient.disconnect()
@@ -97,6 +97,9 @@ context = discord.ext.commands.context.Context
 
 @client.command()
 async def close(ctx:context):
+    if (str(ctx.author) != CREATOR_NAME):
+        await ctx.send("Permission denied")
+        return
     db.close()
     await client.close()
 
@@ -128,6 +131,7 @@ async def set_url(ctx:context, *name):
 @client.command()
 async def set_time(ctx:context, *name):
     time = int(name[-1])
+    time = min(time, 10)
     name = ' '.join(name[:-1])
     cursor.execute('''UPDATE users SET time = ? WHERE name = ? ''',
      (time, name))     
