@@ -16,7 +16,8 @@ from my_classes import YTDLSource
 
 players = {}
 
-DISCORD_BOT_TOKEN = 'NjA1NDgxOTQ5Nzc5NDYwMDk4.XUFYeQ.LKGc8kUXDnExPKj12MHBlh3zMqE'
+description='No description provided'
+DISCORD_BOT_TOKEN = 'NjA1NDgxOTQ5Nzc5NDYwMDk4.XUMvQA.ky2_JtqJ8B1fmTVQPDY-XZJnzeU'
 BOT_NAME = 'TestBot#9545'
 CREATOR_NAME = 'Sasha Drozdov#8680'
 
@@ -95,49 +96,53 @@ async def on_voice_state_update(member, before:discord.VoiceState, after:discord
 
 context = discord.ext.commands.context.Context
 
-@client.command()
-async def close(ctx:context):
+@client.command(description='Stops the bot(admin only)')
+async def stop(ctx:context):
     if (str(ctx.author) != CREATOR_NAME):
         await ctx.send("Permission denied")
         return
     db.close()
     await client.close()
 
-@client.command()
+@client.command(description='Repeats after you')
 async def echo(ctx:context, args):
     await ctx.channel.send(args)
 
-@client.command()
+@client.command(description='Adds you to bot users')
 async def add(ctx:context, *name):
-    name = ' '.join(name)
+    #name = ' '.join(name)
+    name = str(ctx.author)
     cursor.execute('''INSERT INTO users(name, url, time)
               VALUES(?,?,?)''', (name, '', 0))    
     db.commit()
     
-@client.command()
+@client.command(description='Removes you from bot users')
 async def remove(ctx:context, *name):
-    name = ' '.join(name)
+    #name = ' '.join(name)
+    name = str(ctx.author)
     cursor.execute('''DELETE FROM users WHERE id = ? ''', (name))
     db.commit()
     
-@client.command()
+@client.command(description='Sets a URL(preferable youtube one) that will be played when you enter a voice channel')
 async def set_url(ctx:context, *name):
     url = name[-1]
-    name = ' '.join(name[:-1])
+    #name = ' '.join(name[:-1])
+    name = ctx.author
     cursor.execute('''UPDATE users SET url = ? WHERE name = ? ''',
      (url, name))     
     db.commit()
     
-@client.command()
+@client.command(description='Sets how much seconds(up to 10) of your URL will be played(starter is 0)')
 async def set_time(ctx:context, *name):
     time = int(name[-1])
     time = min(time, 10)
-    name = ' '.join(name[:-1])
+    #name = ' '.join(name[:-1])
+    name = ctx.author
     cursor.execute('''UPDATE users SET time = ? WHERE name = ? ''',
      (time, name))     
     db.commit()
     
-@client.command()
+@client.command(description="Shows information about user's musical theme")
 async def view(ctx:context, *name):
     name = ' '.join(name)
     await ctx.send(get_url(name) + ' ' + str(get_time(name)))
